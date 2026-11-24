@@ -1,4 +1,6 @@
-"""Monte Carlo pricing of European options under the risk-neutral measure.
+"""
+Layer: Business rules — Monte Carlo pricing under the risk-neutral measure.
+Monte Carlo pricing of European options under the risk-neutral measure.
 
 The underlying follows a geometric Brownian motion with drift ``r`` (the
 risk-free rate) and volatility ``sigma``. The price is the discounted

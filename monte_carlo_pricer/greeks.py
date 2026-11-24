@@ -1,4 +1,6 @@
-"""Greeks by finite differences (Monte Carlo) and analytical formulas.
+"""
+Layer: Business rules — sensitivities by finite differences.
+Greeks by finite differences (Monte Carlo) and analytical formulas.
 
 Monte Carlo Greeks use bump-and-revalue with common random numbers: the
 base price and every bumped price are computed with the same seed, so the

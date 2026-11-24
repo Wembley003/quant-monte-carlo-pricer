@@ -1,4 +1,6 @@
-"""Stochastic processes: simulation and analytical results.
+"""
+Layer: Business rules — the stochastic processes that drive the simulation.
+Stochastic processes: simulation and analytical results.
 
 This module is the explicit stochastic-processes core of the project. It
 covers the two processes a quant interview will ask about, each with its

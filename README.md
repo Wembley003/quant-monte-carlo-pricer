@@ -122,12 +122,88 @@ analytical 108.33; variance 1,115 vs 1,105. OU terminal moments
 pytest
 ```
 
-33 tests, all passing. They check Black-Scholes against textbook values
+49 tests, all passing. They check Black-Scholes against textbook values
 and put–call parity, every process against its analytical moments and
 stationary distribution, Milstein beating Euler–Maruyama in strong error
 with identical Brownian increments, Monte Carlo prices against
 Black-Scholes within 3 standard errors, Monte Carlo Greeks against the
-analytical ones, and implied-volatility round-trips.
+analytical ones, and implied-volatility round-trips. The layer tests in
+`tests/test_layers.py` check the full chain (inputs → simulation →
+stored results) and that the layers do not mix: the business rules run
+with openpyxl and sqlite3 blocked.
+
+```bash
+./run_tests.sh   # lo mismo, buscando el venv solo
+```
+
+## Layers
+
+Three layers; Bronze/Silver/Gold does **not** apply here (there is no
+data pipeline with raw → clean → aggregate staging — the inputs are
+scalar parameters and there is nothing to clean, so forcing it would
+be labeling, not architecture):
+
+- **Client (presentation)** — `examples/demo.py`: the demo the user
+  runs. It never touches storage directly.
+- **Business rules** — `black_scholes.py`, `stochastic_processes.py`,
+  `monte_carlo.py`, `greeks.py`, `implied_vol.py`: the models, the
+  simulation and the Greeks. Pure math: no sqlite3, no openpyxl, no
+  calls to the client or to storage.
+- **Queries & analysis** — `persistence.py`, `excel_export.py`,
+  `tableau_extract.py`, `pivot_table.py` (plus `sql/schema_access.sql`
+  and `access/`): the Monte Carlo/Greeks results, saved in SQLite and
+  queried/exported. The analysis here is Python, not SQL: comparing
+  and storing the simulated results.
+
+## Guardar corridas: SQLite + Excel (nuevo)
+
+Antes cada simulación salía por pantalla y se perdía. Ahora queda
+guardada con sus parámetros, su precio de Monte Carlo, su error
+estándar, el precio exacto de Black-Scholes y las cinco Griegas, en
+una base SQLite (`persistence.py`), y se puede exportar a Excel
+(`excel_export.py`) con tres hojas: las corridas, las Griegas y un
+resumen con el error medio entre Monte Carlo y Black-Scholes. Si ese
+error medio es mucho mayor que el error estándar típico, la simulación
+tiene un problema.
+
+```python
+from monte_carlo_pricer import persistence, excel_export
+
+run_id = persistence.record_mc_run("runs.db", 100, 100, 1.0, 0.05, 0.20)
+excel_export.export_workbook("runs.db", "runs.xlsx")
+```
+
+## Tablas dinámicas y Access
+
+El Excel exportado trae dos tablas dinámicas nativas, no valores
+pegados: "Dinámica por opción" agrupa las corridas por call/put con
+el precio MC promedio, el precio Black-Scholes promedio y el error
+estándar promedio; "Dinámica por Griega" agrupa por Griega con el
+error absoluto promedio y el valor MC promedio. Son objetos
+pivotTable reales (definición + caché + registros dentro del .xlsx),
+así que Excel las recalcula al abrir y se pueden filtrar y reordenar
+como cualquier tabla dinámica. Si la base está vacía, la exportación
+sigue funcionando sin pivotes.
+
+En `access/` está además la base real de Access
+(`monte-carlo-pricer.accdb`, formato ACE14): tablas `runs` y `greeks`
+con sus filas, construida con Jackcess desde SQLite y verificada con
+mdbtools. Se regenera con `bash access/build_access.sh runs.db
+monte-carlo-pricer.accdb` (ver `access/README.md`). Los CSV de
+`access/csv/` y el esquema son el pack de importación en texto.
+
+## Tableau y Access: extractos, no integración (nuevo)
+
+Sin mentir: no hay conector con Tableau. Lo que hay es un CSV
+ordenado (`tableau_extract.write_price_grid_csv`) con una rejilla de
+precios Black-Scholes — S0 de 80 a 120 contra volatilidad de 10% a
+40% — que se importa en Tableau tal cual. Para Access ya no hace
+falta el esquema SQL de `sql/schema_access.sql`: la base `.accdb`
+real está en `access/` (ver la sección anterior). La idea del
+tablero: precio del call contra S0, con una línea por volatilidad, y
+un mapa de calor de la delta. Eso deja ver de un vistazo cómo
+responde el precio cuando se mueve el mercado, que es justo lo que
+un tablero debe mostrar.
 
 ## Structure
 
@@ -139,13 +215,29 @@ quant-monte-carlo-pricer/
 │   ├── stochastic_processes.py  # GBM (exact/Euler/Milstein), OU, Ito
 │   ├── monte_carlo.py           # Monte Carlo pricing, antithetic variates
 │   ├── greeks.py                # finite-difference Greeks (common random numbers)
-│   └── implied_vol.py           # implied volatility by bisection + Newton
+│   ├── implied_vol.py           # implied volatility by bisection + Newton
+│   ├── persistence.py           # SQLite: guarda corridas y Griegas
+│   ├── excel_export.py          # exporta la base a Excel (3 hojas + 2 pivotes)
+│   ├── pivot_table.py           # tablas dinámicas nativas de Excel
+│   └── tableau_extract.py       # CSV rejilla S0 x sigma, listo para Tableau
+├── access/                       # .accdb real + CSV/schema + constructor Java
+│   ├── monte-carlo-pricer.accdb
+│   ├── dump_access.py
+│   ├── AccessBuilder.java
+│   └── build_access.sh
+├── sql/
+│   └── schema_access.sql        # DDL para Access (solo esquema, sin probar en Access)
 ├── tests/
 │   ├── test_black_scholes.py
 │   ├── test_stochastic_processes.py
 │   ├── test_monte_carlo.py
 │   ├── test_greeks.py
-│   └── test_implied_vol.py
+│   ├── test_implied_vol.py
+│   ├── test_persistence.py
+│   ├── test_excel_export.py
+│   ├── test_access.py
+│   └── test_tableau_extract.py
+├── run_tests.sh                 # corre pytest buscando el venv
 ├── examples/
 │   └── demo.py                  # full validation run
 ├── results/

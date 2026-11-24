@@ -1,0 +1,93 @@
+{
+  "tables": [
+    {
+      "name": "runs",
+      "rows": 2,
+      "columns": [
+        {
+          "name": "id",
+          "type": "LONG"
+        },
+        {
+          "name": "created_at",
+          "type": "TEXT",
+          "length": 50
+        },
+        {
+          "name": "s0",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "k",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "t",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "r",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "sigma",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "n_paths",
+          "type": "LONG"
+        },
+        {
+          "name": "option",
+          "type": "TEXT",
+          "length": 50
+        },
+        {
+          "name": "seed",
+          "type": "LONG"
+        },
+        {
+          "name": "mc_price",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "mc_se",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "bs_price",
+          "type": "DOUBLE"
+        }
+      ],
+      "csv": "/home/hatch/workspace/quant-projects/monte-carlo-pricer/access/csv/runs.csv"
+    },
+    {
+      "name": "greeks",
+      "rows": 10,
+      "columns": [
+        {
+          "name": "id",
+          "type": "LONG"
+        },
+        {
+          "name": "run_id",
+          "type": "LONG"
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "length": 50
+        },
+        {
+          "name": "mc_value",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "bs_value",
+          "type": "DOUBLE"
+        }
+      ],
+      "csv": "/home/hatch/workspace/quant-projects/monte-carlo-pricer/access/csv/greeks.csv"
+    }
+  ]
+}

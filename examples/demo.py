@@ -1,4 +1,6 @@
-"""Demo: Monte Carlo vs Black-Scholes, Greeks, implied vol, and the
+"""
+Layer: Client (presentation) — the demo the user runs to see the pricer work.
+Demo: Monte Carlo vs Black-Scholes, Greeks, implied vol, and the
 stochastic-processes module (GBM schemes and Ornstein-Uhlenbeck).
 
 Run from the repository root:

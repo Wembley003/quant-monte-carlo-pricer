@@ -1,4 +1,6 @@
-"""Implied volatility: invert the Black-Scholes formula.
+"""
+Layer: Business rules — inverting Black-Scholes for the implied volatility.
+Implied volatility: invert the Black-Scholes formula.
 
 Given a market price, find the sigma such that the Black-Scholes price
 matches it. The Black-Scholes price is monotonically increasing in sigma

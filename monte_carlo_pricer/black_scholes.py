@@ -1,4 +1,6 @@
-"""Closed-form Black-Scholes pricing and analytical Greeks.
+"""
+Layer: Business rules — the closed-form model everything is checked against.
+Closed-form Black-Scholes pricing and analytical Greeks.
 
 The reference solution against which the Monte Carlo pricer is validated.
 Only the standard normal CDF/PDF from ``scipy.stats`` is used; no pricing
